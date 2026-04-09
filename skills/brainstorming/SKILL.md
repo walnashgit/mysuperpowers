@@ -26,10 +26,10 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Write design doc** — save to `docs/mysuperpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
 7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+9. **Transition to next phase** — ask if user wants a PRD (creating-prd), a milestone plan (milestone-planning), or stop
 
 ## Process Flow
 
@@ -45,7 +45,11 @@ digraph brainstorming {
     "Write design doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
     "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
+    "Ask: Create PRD?" [shape=diamond];
+    "Invoke creating-prd skill" [shape=doublecircle];
+    "Ask: Create milestone plan?" [shape=diamond];
+    "Invoke milestone-planning skill" [shape=doublecircle];
+    "Stop and wait" [shape=box];
 
     "Explore project context" -> "Visual questions ahead?";
     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
@@ -59,11 +63,15 @@ digraph brainstorming {
     "Write design doc" -> "Spec self-review\n(fix inline)";
     "Spec self-review\n(fix inline)" -> "User reviews spec?";
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User reviews spec?" -> "Ask: Create PRD?" [label="approved"];
+    "Ask: Create PRD?" -> "Invoke creating-prd skill" [label="yes"];
+    "Ask: Create PRD?" -> "Ask: Create milestone plan?" [label="no"];
+    "Ask: Create milestone plan?" -> "Invoke milestone-planning skill" [label="yes"];
+    "Ask: Create milestone plan?" -> "Stop and wait" [label="no"];
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal states are invoking creating-prd, invoking milestone-planning, or stopping to wait.** Do NOT invoke any implementation skill directly. After spec approval, follow the next-steps flow in the "After the Design" section below.
 
 ## The Process
 
@@ -108,7 +116,7 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design (spec) to `docs/mysuperpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
@@ -126,14 +134,22 @@ Fix any issues inline. No need to re-review — just fix and move on.
 **User Review Gate:**
 After the spec review loop passes, ask the user to review the written spec before proceeding:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we move on."
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
-**Implementation:**
+**Next Steps:**
 
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+After the user approves the spec, ask:
+
+> "Would you like me to create a PRD for this feature?"
+
+- If **yes** — invoke the `creating-prd` skill.
+- If **no** — ask: "Would you like me to create an implementation plan with milestones?"
+  - If **yes** — invoke the `milestone-planning` skill.
+  - If **no** — stop and wait for the user.
+
+Do NOT invoke any implementation skill directly or start writing code.
 
 ## Key Principles
 
