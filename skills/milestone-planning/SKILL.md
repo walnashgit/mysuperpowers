@@ -199,6 +199,9 @@ Verify in plan.md that prior milestones' completion checklists are fully checked
 
 ## When complete
 1. Update Milestone N's completion checklist in docs/features/feature-name/plan.md (check all four boxes)
+
+   Note on the completion checklist: Complete every item that applies to this milestone honestly. If an item doesn't cleanly apply to this milestone's scope (for example, a foundation milestone may have no meaningful application code to test, a deployment config milestone may have no reviewable business logic), mark it complete with a brief annotation like "✓ N/A — [reason]". Do not invent meaningless work just to check a box. Do not leave items unchecked without explanation.
+
 2. Add a brief completion note to plan.md (1-2 lines: what was done, any deviations from the plan)
 3. Provide a suggested commit message in the format: "Milestone N: name — brief description"
 4. STOP. Do not commit. Do not start the next milestone. Wait for me.
