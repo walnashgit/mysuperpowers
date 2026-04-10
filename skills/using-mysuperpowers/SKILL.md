@@ -93,16 +93,18 @@ These thoughts mean STOP—you're rationalizing:
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+| "The plan is approved, I should just start milestone 1 to be helpful" | NO. Planning ends in this session by design. Milestone execution happens in a fresh session so each milestone gets a clean context window. Stop after planning. The user will start the next session themselves. |
+| "The user said this is urgent, I'll skip the PRD and plan and just implement" | Only skip the planning flow if the user EXPLICITLY says to skip it. Don't infer urgency from tone and decide to bypass the workflow. Ask if you're unsure. |
 
 ## Skill Priority
 
 When multiple skills could apply, use this order:
 
 1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (test-driven-development, systematic-debugging) - these guide execution
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
 
 "Let's build X" → brainstorming first, then implementation skills.
-"Fix this bug" → systematic-debugging first, then domain-specific skills.
+"Fix this bug" → debugging first, then domain-specific skills.
 
 ## Two-Phase Workflow
 

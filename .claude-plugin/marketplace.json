@@ -1,0 +1,17 @@
+{
+  "name": "mysuperpowers-dev",
+  "owner": {
+    "name": "avinash"
+  },
+  "plugins": [
+    {
+      "name": "mysuperpowers",
+      "description": "Personal skills library: brainstorming-first workflow and session setup for collaborative development",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "avinash"
+      }
+    }
+  ]
+}
