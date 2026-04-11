@@ -168,10 +168,10 @@ The approved plan file must follow this layout exactly. Execution sessions depen
 [fenced code block containing the generated execution prompt — see Execution Prompt Template]
 
 **Completion notes:** *(filled in after execution)*
-**Suggested commit message:** *(filled in after execution)*
+**Integration outcome:** *(filled in after execution — e.g., merged to main, PR #123, kept as branch feature-name)*
 ```
 
-Completion notes and suggested commit message are left blank in the plan — the execution session fills them in after the milestone is complete.
+Completion notes and integration outcome are left blank in the plan — the execution session fills them in after the milestone is complete.
 
 ---
 
@@ -192,9 +192,8 @@ Read the following for context:
 Verify in plan.md that prior milestones' completion checklists are fully checked. If a dependency milestone is incomplete, stop and tell me — do not proceed.
 
 ## Execution rules
-- Use the standard mysuperpowers execution workflow: test-driven-development, requesting-code-review, verification-before-completion as appropriate
+- Use the standard mysuperpowers execution workflow: test-driven-development commits per TDD cycle; use requesting-code-review and verification-before-completion as appropriate
 - Work on the current branch unless I tell you otherwise — do not create a git worktree
-- Do NOT commit changes. After completing the milestone, provide a suggested commit message I can use to commit manually
 - Do NOT start the next milestone — each milestone runs in its own session by design
 
 ## When complete
@@ -203,8 +202,8 @@ Verify in plan.md that prior milestones' completion checklists are fully checked
    Note on the completion checklist: Complete every item that applies to this milestone honestly. If an item doesn't cleanly apply to this milestone's scope (for example, a foundation milestone may have no meaningful application code to test, a deployment config milestone may have no reviewable business logic), mark it complete with a brief annotation like "✓ N/A — [reason]". Do not invent meaningless work just to check a box. Do not leave items unchecked without explanation.
 
 2. Add a brief completion note to plan.md (1-2 lines: what was done, any deviations from the plan)
-3. Provide a suggested commit message in the format: "Milestone N: name — brief description"
-4. STOP. Do not commit. Do not start the next milestone. Wait for me.
+3. Use the finishing-a-development-branch skill to present integration options (merge, PR, keep, discard). Wait for my choice before executing.
+4. STOP. Do not start the next milestone. Wait for me.
 ```
 
 ---
@@ -226,10 +225,11 @@ A milestone is a logically coherent unit of work — a set of changes that belon
 1. Never start implementation from this skill
 2. Never produce a plan without explicit user confirmation
 3. Never overwrite an existing plan.md silently — read first, offer to update
-4. Never commit on behalf of the user (the execution prompt also enforces this during execution)
-5. Never renumber milestones after the plan is created — insertions go at the end as new milestones with the next available number
-6. Always save plan.md to the repo — never leave as conversation-only output
-7. After plan.md is saved, STOP — do not chain into execution
+4. The planning phase never commits — no code is produced during planning
+5. The execution phase commits per TDD cycle and ends with finishing-a-development-branch presenting integration options; the user always chooses the integration action (merge/PR/keep/discard)
+6. Never renumber milestones after the plan is created — insertions go at the end as new milestones with the next available number
+7. Always save plan.md to the repo — never leave as conversation-only output
+8. After plan.md is saved, STOP — do not chain into execution
 
 If the user asks to begin implementation during or after planning, politely decline and explain: each milestone runs in its own fresh session by design. The plan file contains an execution prompt they can paste into a new session to begin.
 
