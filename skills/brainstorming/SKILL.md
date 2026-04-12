@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: "Use before any creative work — creating features, building components, adding functionality, or modifying behavior — OR when revising an existing feature design. Triggers on: 'create feature X', 'build X', 'add functionality', 'update feature X', 'revise the design', 'change the plan for Y', 'modify the existing design'. Explores intent and design (new features) or focused change delta (revisions) before implementation."
 ---
 
 # Brainstorming Ideas Into Designs
@@ -17,7 +17,25 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
 
 Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
 
-## Checklist
+## Mode Detection
+
+When brainstorming activates, determine which mode applies before asking any questions:
+
+**Revision mode** — any of these apply:
+- The user's phrasing includes update/revise/change/modify language directed at an existing feature: "update feature X", "revise the design", "change the plan for Y", "I want to modify the existing design"
+- The user references a feature name and any of these files exist at `docs/features/<name>/`: `<name>-design.md`, `prd.md`, or `plan.md`
+
+**Create mode** — none of the above apply and the user is describing something new with no existing design.
+
+**If uncertain**, ask before proceeding:
+
+> "Is this a new feature or an update to an existing one?"
+
+Do not begin either flow's questions until the mode is confirmed.
+
+---
+
+## Checklist (Create Mode)
 
 You MUST create a task for each of these items and complete them in order:
 
@@ -26,12 +44,15 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/mysuperpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to next phase** — ask if user wants a PRD (creating-prd), a milestone plan (milestone-planning), or stop
+6. **Confirm feature name** — ask the user for the kebab-case feature name; determines the save path for the design doc
+7. **Write design doc** — save to `docs/features/<feature-name>/<feature-name>-design.md` and commit
+8. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
+9. **User reviews written spec** — ask user to review the spec file before proceeding
+10. **Transition to next phase** — ask if user wants a PRD (creating-prd), a milestone plan (milestone-planning), or stop
 
-## Process Flow
+## Process Flow (Create Mode)
+
+For Revision Mode flow, see the **Revision Mode** section below.
 
 ```dot
 digraph brainstorming {
@@ -71,7 +92,7 @@ digraph brainstorming {
 }
 ```
 
-**The terminal states are invoking creating-prd, invoking milestone-planning, or stopping to wait.** Do NOT invoke any implementation skill directly. After spec approval, follow the next-steps flow in the "After the Design" section below.
+**The terminal states are invoking creating-prd, invoking milestone-planning, or stopping to wait.** This applies in both Create Mode and Revision Mode. Do NOT invoke any implementation skill directly.
 
 ## The Process
 
@@ -116,8 +137,11 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/mysuperpowers/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
+Confirm the feature name with the user before writing the design doc. If a name has already been mentioned in the conversation, state it and ask for confirmation rather than re-asking.
+
+> "What's the kebab-case name for this feature? I'll save the design to `docs/features/<name>/<name>-design.md`."
+
+- Write the validated design (spec) to `docs/features/<feature-name>/<feature-name>-design.md`
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
@@ -151,6 +175,105 @@ After the user approves the spec, ask:
 
 Do NOT invoke any implementation skill directly or start writing code.
 
+## Revision Mode
+
+Activates when Mode Detection determines this is an update to an existing feature. This is a focused, delta-only conversation. The original design is the anchor — do not re-run the full discovery questions.
+
+### Checklist (Revision Mode)
+
+You MUST create a task for each of these items and complete them in order:
+
+1. **Confirm feature name** — ask the user to confirm the kebab-case name; it must match `docs/features/<name>/`
+2. **Read existing context** — read `<name>-design.md`, `prd.md`, and `plan.md` from `docs/features/<name>/` if they exist. The design file is the primary context anchor; the PRD and plan add additional context. If none of the three files are found, stop and tell the user (see fallback below)
+3. **Ask revision questions** — one at a time, conversationally (see questions below)
+4. **Present change summary** — summarize the delta clearly; get explicit user confirmation before proceeding
+5. **Handoff** — ask about updating the PRD, then the milestone plan; follow the handoff flow below
+
+### Process Flow (Revision Mode)
+
+```dot
+digraph revision_mode {
+    "Confirm feature name" [shape=box];
+    "Read existing context\n(design, PRD, plan)" [shape=box];
+    "Files found?" [shape=diamond];
+    "Stop: no existing design found\n(offer Create Mode or wait)" [shape=box];
+    "Ask revision questions\n(one at a time)" [shape=box];
+    "Present change summary" [shape=box];
+    "User confirms summary?" [shape=diamond];
+    "Ask: Update design file?" [shape=diamond];
+    "Update design file" [shape=box];
+    "Ask: Update PRD?" [shape=diamond];
+    "Invoke creating-prd skill" [shape=doublecircle];
+    "Ask: Update milestone plan?" [shape=diamond];
+    "Invoke milestone-planning skill" [shape=doublecircle];
+    "Stop and wait" [shape=box];
+
+    "Confirm feature name" -> "Read existing context\n(design, PRD, plan)";
+    "Read existing context\n(design, PRD, plan)" -> "Files found?";
+    "Files found?" -> "Stop: no existing design found\n(offer Create Mode or wait)" [label="no"];
+    "Files found?" -> "Ask revision questions\n(one at a time)" [label="yes"];
+    "Ask revision questions\n(one at a time)" -> "Present change summary";
+    "Present change summary" -> "User confirms summary?";
+    "User confirms summary?" -> "Ask revision questions\n(one at a time)" [label="no, revise"];
+    "User confirms summary?" -> "Ask: Update design file?" [label="yes"];
+    "Ask: Update design file?" -> "Update design file" [label="yes"];
+    "Ask: Update design file?" -> "Ask: Update PRD?" [label="no"];
+    "Update design file" -> "Ask: Update PRD?";
+    "Ask: Update PRD?" -> "Invoke creating-prd skill" [label="yes"];
+    "Ask: Update PRD?" -> "Ask: Update milestone plan?" [label="no"];
+    "Ask: Update milestone plan?" -> "Invoke milestone-planning skill" [label="yes"];
+    "Ask: Update milestone plan?" -> "Stop and wait" [label="no"];
+}
+```
+
+### Fallback: No Existing Design Found
+
+If Step 2 finds none of the three files at `docs/features/<name>/`, stop the revision flow and tell the user:
+
+> "I don't find any existing design, PRD, or plan at `docs/features/<name>/`. Did you mean to create a new feature? If so, I can switch to Create Mode. If not, check the feature name and try again."
+
+- If the user confirms they want to create a new feature — switch to Create Mode and begin from the top of the Create Mode checklist.
+- Otherwise — stop and wait for the user.
+
+### Revision Questions
+
+Ask these one at a time, conversationally. Follow the user's answers — if one answer makes the next question obvious, weave it in naturally.
+
+1. "What specifically are you changing?"
+2. "What's motivating the change?"
+3. "What stays the same?"
+4. "What are the implications?" *(brief — not a deep dive)*
+
+Unlike the Create Mode flow, these four questions are the full conversation. Do not probe further unless an answer is genuinely ambiguous.
+
+### Change Summary
+
+After the four questions, present a clear summary of the delta:
+
+> "Here's what I understand is changing: [summary of what changes, what motivates it, what stays the same, and any implications]"
+
+Wait for explicit user confirmation before proceeding. If the user corrects anything, revise the summary and re-confirm.
+
+### Handoff (Revision Mode)
+
+After the user confirms the summary:
+
+> "Do you want me to update the design file to reflect this change?"
+
+- **Yes** — overwrite `docs/features/<feature-name>/<feature-name>-design.md` with the updated design. Then continue.
+- **No** — continue.
+
+> "Do you want to update the PRD to reflect this change?"
+
+- **Yes** — invoke `creating-prd`. It will detect the existing PRD and handle the update.
+- **No** — ask: "Do you want to go straight to updating the milestone plan?"
+  - **Yes** — invoke `milestone-planning`.
+  - **No** — stop and wait.
+
+Do NOT write or modify PRD or plan files from this skill. Do NOT invoke any implementation skill.
+
+---
+
 ## Key Principles
 
 - **One question at a time** - Don't overwhelm with multiple questions
@@ -159,6 +282,26 @@ Do NOT invoke any implementation skill directly or start writing code.
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design, get approval before moving on
 - **Be flexible** - Go back and clarify when something doesn't make sense
+
+## Hard Rules
+
+- **In revision mode, never re-run the full discovery questions.** The original design is the anchor — focus only on the delta.
+- **Always confirm the feature name and read existing context (design file, PRD, plan) before discussing the change.** Do not begin revision questions without loading existing context.
+- **Never write or modify PRD or plan files from this skill.** Those belong to `creating-prd` and `milestone-planning` respectively. Brainstorming hands off; it does not write PRDs or plans.
+- **The design file (`<feature-name>-design.md`) is owned by this skill.** Create Mode writes it. Revision Mode may update it, but only after explicit user confirmation in the handoff step.
+
+---
+
+## Red Flags
+
+| Thought | Reality |
+|---|---|
+| "The user said 'update feature X' — I'll re-run the full discovery questions to make sure I understand" | NO. Revision mode is focused on the delta, not a full re-derivation. Run the four revision questions only. |
+| "I'll just update the PRD myself while I have context — it's faster than handing off" | NO. Brainstorming never writes PRDs or plans. Summarize the change, confirm it, then hand off to `creating-prd`. |
+| "The user described the change clearly enough — I don't need to read the existing files first" | NO. Always read the design file, PRD, and plan before the revision conversation. They are the anchor and may contain constraints the user didn't mention. |
+| "The change summary is confirmed — I'll update the design file and move straight to offering the PRD" | NO. Always ask explicitly before updating the design file. Confirmation of the summary is not the same as authorization to write. |
+
+---
 
 ## Visual Companion
 
