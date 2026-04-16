@@ -72,7 +72,7 @@ One fresh session per milestone.
 
 When a feature's design changes mid-development, all three planning skills support update and revision modes. Changes cascade from design → PRD → plan, but each step is user-driven, not automatic.
 
-**brainstorming Revision Mode** is a focused, delta-only conversation. Instead of the full discovery flow, it asks four questions: what's changing, what's motivating the change, what stays the same, and what are the implications. It presents a change summary for explicit confirmation, updates the design file, and then asks whether the PRD needs updating. If yes, it hands off to creating-prd.
+**brainstorming Revision Mode** is a focused, delta-only conversation. Instead of the full discovery flow, it asks four questions: what's changing, what's motivating the change, what stays the same, and what are the implications. It presents a change summary for explicit confirmation, updates the design file, and then asks whether the PRD needs updating. If yes, it hands off to creating-prd skill.
 
 **creating-prd Update Mode** walks through affected PRD sections one at a time: quote the current content, propose the specific change, get approval, apply in-place. Untouched sections are left exactly as they are. A change log entry is added automatically on every save, newest-first.
 
