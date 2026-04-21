@@ -432,7 +432,7 @@ Read the following for context:
 Verify in plan.md that prior milestones' completion checklists are fully checked. If a dependency milestone is incomplete, stop and tell me — do not proceed.
 
 ## Execution rules
-- Use the standard mysuperpowers execution workflow: test-driven-development commits per TDD cycle; use requesting-code-review and verification-before-completion as appropriate
+- Use the standard mysuperpowers execution workflow: test-driven-development; do NOT commit during the TDD cycle — leave all changes uncommitted until the finishing step; use requesting-code-review and verification-before-completion as appropriate
 - Work on the current branch unless I tell you otherwise — do not create a git worktree
 - Do NOT start the next milestone — each milestone runs in its own session by design
 
@@ -466,7 +466,7 @@ A milestone is a logically coherent unit of work — a set of changes that belon
 2. Never produce a plan without explicit user confirmation
 3. **Never replace an existing plan.md without user approval.** In Create Mode, stop if plan.md exists at the target path and offer Update Mode. In Update Mode, the save step is an intentional replacement after the user has approved changes through the selected flow.
 4. The planning phase never commits — no code is produced during planning
-5. The execution phase commits per TDD cycle and ends with finishing-a-development-branch presenting integration options; the user always chooses the integration action (merge/PR/keep/discard)
+5. The execution phase does NOT commit during the TDD cycle — all changes remain uncommitted; finishing-a-development-branch checks for uncommitted changes, asks for user approval before committing, then presents integration options; the user always chooses the integration action (merge/PR/keep/discard)
 6. Never renumber milestones after the plan is created — insertions go at the end as new milestones with the next available number
 7. Always save plan.md to the repo — never leave as conversation-only output
 8. After plan.md is saved, STOP — do not chain into execution
