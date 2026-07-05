@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+env/
+__pycache__/
+.pip/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+coverage/
+
+# Graphify's own output
+graphify-out/
+
+# Obsidian vault (if you use --obsidian)
+.obsidian/
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+
+# Generated / auto files
+*.min.js
+*.min.css
+*.map
+*.lock
+package-lock.json
+yarn.lock
+
+# Assets that aren't informational
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+
+AGENTS.md          # graphify install files — don't extract your own instructions as knowledge
+CLAUDE.md
+GEMINI.md
