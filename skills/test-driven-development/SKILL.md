@@ -55,6 +55,7 @@ digraph tdd_cycle {
     verify_green [label="Verify passes\nAll green", shape=diamond];
     refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
     next [label="Next", shape=ellipse];
+    compact [label="Compact\nCheckpoint", shape=box, style=filled, fillcolor="#ffffcc"];
 
     red -> verify_red;
     verify_red -> green [label="yes"];
@@ -64,7 +65,8 @@ digraph tdd_cycle {
     verify_green -> green [label="no"];
     refactor -> verify_green [label="stay\ngreen"];
     verify_green -> next;
-    next -> red;
+    next -> compact;
+    compact -> red;
 }
 ```
 
@@ -190,6 +192,22 @@ After green only:
 - Extract helpers
 
 Keep tests green. Don't add behavior.
+
+### Compact Checkpoint
+
+After GREEN + REFACTOR verify, before starting the next feature, evaluate what happened this cycle:
+
+| What happened | Action |
+|---|---|
+| Any debugging occurred | Suggest `/compact` — always worth it |
+| Test needed >1 attempt before going green | Suggest `/compact` |
+| 3+ file reads during this cycle | Suggest `/compact` |
+| Test passed first try, clean cycle | Skip — continue directly |
+
+**When suggesting:**
+1. Output one line: `✓ [feature name] — tests pass, refactored.`
+2. Say: "Suggest `/compact` before the next cycle — [reason, e.g. 'debugging accumulated traces']. Run it then tell me what's next, or say 'continue' to skip."
+3. Wait for user response.
 
 ### Repeat
 

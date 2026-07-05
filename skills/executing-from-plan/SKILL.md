@@ -141,6 +141,21 @@ These skills activate naturally during milestone work based on their own trigger
 | `verification-before-completion` | Confirming the milestone is actually done |
 | `finishing-a-development-branch` | End-of-milestone integration (merge / PR / keep / discard) |
 
+## Compaction Policy
+
+Context grows from test outputs, file reads, error traces, and fix iterations. Compact at clean task boundaries — never mid-task. The agent cannot read token counts directly; use these observable proxies instead:
+
+**Always suggest `/compact`:**
+- After any debugging session resolves (traces are always verbose)
+- After a TDD cycle that needed >1 attempt before going green
+- After code review with 3+ items implemented
+
+**Skip compaction:**
+- After a clean TDD cycle (test passed first try, minimal file reads)
+- After 1-2 simple review fixes with no debugging
+
+**At each checkpoint:** output one summary line of what was accomplished + the reason compaction is worth it. User can skip by saying "continue". After compaction, resume at the next step.
+
 ## Hard Rules
 
 1. brainstorming, creating-prd, and milestone-planning are suppressed for the entire session — never invoke them, never suggest them, block silently

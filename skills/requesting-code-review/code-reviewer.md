@@ -17,14 +17,16 @@ You are reviewing code changes for production readiness.
 
 {PLAN_REFERENCE}
 
-## Git Range to Review
+## Changes to Review
 
-**Base:** {BASE_SHA}
-**Head:** {HEAD_SHA}
+Run both to capture all changes (committed on this branch + uncommitted working tree):
 
 ```bash
-git diff --stat {BASE_SHA}..{HEAD_SHA}
-git diff {BASE_SHA}..{HEAD_SHA}
+BASE=$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD master 2>/dev/null || git rev-parse HEAD)
+git diff --stat $BASE    # committed changes on branch vs main
+git diff --stat HEAD     # uncommitted changes (staged + unstaged)
+git diff $BASE           # full committed diff
+git diff HEAD            # full uncommitted diff (staged + unstaged)
 ```
 
 ## Review Checklist

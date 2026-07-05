@@ -35,7 +35,38 @@ Cannot proceed with merge/PR until tests pass.
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If tests pass:** Continue to Step 1b.
+
+### Step 1b: Check for Uncommitted Changes
+
+```bash
+git status --short
+git diff --stat HEAD
+```
+
+**If uncommitted changes exist:**
+
+Show the user a summary of what's uncommitted, then ask:
+
+```
+There are uncommitted changes. Here's a summary:
+<output of git diff --stat HEAD>
+
+These must be committed before merging or pushing. Would you like to commit them now? If so, provide a commit message (or type "yes" to use an auto-generated one).
+```
+
+Wait for explicit approval. Accepted responses: "yes", a commit message, or "commit".
+
+- If approved: `git add -A && git commit -m "<message>"`
+- If declined or no response given: Stop.
+
+```
+Cannot proceed with uncommitted changes. Commit them manually and re-run finishing-a-development-branch.
+```
+
+**Never commit without explicit user confirmation.**
+
+**If no uncommitted changes:** Continue to Step 2.
 
 ### Step 2: Determine Base Branch
 

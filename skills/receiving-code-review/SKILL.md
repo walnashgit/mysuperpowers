@@ -108,7 +108,23 @@ FOR multi-item feedback:
      - Complex fixes (refactoring, logic)
   3. Test each fix individually
   4. Verify no regressions
+  5. When all items done: compact checkpoint (see below)
 ```
+
+### Compact Checkpoint
+
+After all review items are implemented and tested, evaluate:
+
+| What happened | Action |
+|---|---|
+| Any items required debugging or >1 attempt | Suggest `/compact` — always worth it |
+| Review had 3+ items | Suggest `/compact` — review thread is verbose |
+| 1-2 simple fixes, clean implementation | Skip — continue to verification |
+
+**When suggesting:**
+1. Output one line: `✓ Review feedback addressed — [N] items implemented, tests pass.`
+2. Say: "Suggest `/compact` before verification — [reason]. Run it then signal me, or say 'continue' to skip."
+3. Wait for user response.
 
 ## When To Push Back
 

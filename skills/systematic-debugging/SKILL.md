@@ -189,6 +189,8 @@ You MUST complete each phase before proceeding to the next.
    - No other tests broken?
    - Issue actually resolved?
 
+   **When fix works:** Always suggest `/compact` before returning to TDD — debugging sessions always accumulate heavy context (error traces, diagnostic output, hypothesis iterations). Output one line: `✓ Debugging complete — [root cause summary], tests pass.` Then say: "Suggest `/compact` before returning to TDD — debugging traces are verbose and no longer needed. Run it then signal me, or say 'continue' to skip." Wait for user response.
+
 4. **If Fix Doesn't Work**
    - STOP
    - Count: How many fixes have you tried?
