@@ -24,17 +24,55 @@ mysuperpowers is not on the Claude Code plugin marketplace. Install it as a loca
 
 1. Clone or download this repository to a local directory.
 
-2. Install it as a local plugin in Claude Code:
+2. Add the repository as a local marketplace, then install the plugin from it (the repo's `.claude-plugin/marketplace.json` registers the marketplace as `mysuperpowers-dev`):
 
    ```
-   /plugin install /path/to/mysuperpowers
+   /plugin marketplace add /path/to/mysuperpowers
+   /plugin install mysuperpowers@mysuperpowers-dev
    ```
 
-   > **Note:** The Claude Code plugin system is still evolving. Verify the exact command against the current Claude Code documentation if the above doesn't work.
+   CLI equivalents: `claude plugin marketplace add ./mysuperpowers` and `claude plugin install mysuperpowers@mysuperpowers-dev`.
 
 3. Restart Claude Code.
 
 4. Start a fresh session. The agent should acknowledge it has mysuperpowers in its first response — that's the SessionStart hook firing.
+
+## Updating the plugin
+
+Installing **copies** the plugin into `~/.claude/plugins/cache/mysuperpowers-dev/mysuperpowers/<version>/` — it does not symlink the repo. Edits to this repository are invisible to Claude Code until the installed copy is refreshed, and the version number is the update trigger: same version means "nothing changed."
+
+### Direct update after making changes
+
+1. Bump `version` in both `.claude-plugin/plugin.json` and the plugin entry in `.claude-plugin/marketplace.json` (e.g. `1.0.0` → `1.0.1`).
+2. Refresh the marketplace and update the plugin:
+
+   ```
+   /plugin marketplace update mysuperpowers-dev
+   /plugin update mysuperpowers@mysuperpowers-dev
+   ```
+
+3. Restart Claude Code and start a fresh session.
+
+### Reinstall after removing the marketplace
+
+> **Warning:** `/plugin marketplace remove` also uninstalls every plugin that came from that marketplace. To pick up changes, prefer the direct-update flow above — removal is only needed if the marketplace registration itself is broken.
+
+1. Remove (if not already done):
+
+   ```
+   /plugin marketplace remove mysuperpowers-dev
+   ```
+
+2. Re-add the local path and reinstall:
+
+   ```
+   /plugin marketplace add /path/to/mysuperpowers
+   /plugin install mysuperpowers@mysuperpowers-dev
+   ```
+
+3. Restart Claude Code.
+
+`claude plugin validate .` (run from the repo root) checks the plugin/marketplace manifests before installing.
 
 ## The Workflow
 
@@ -45,12 +83,12 @@ Development follows two distinct phases. They never run in the same session.
 Run in a single session. The output is `plan.md` — the agent stops there.
 
 1. Describe an idea or task. `brainstorming` activates in Create Mode.
-2. The skill runs a Socratic design conversation: explores project context, asks clarifying questions one at a time, proposes 2–3 approaches with trade-offs, and presents a design for approval.
-3. The approved design is saved to `docs/features/<feature-name>/<feature-name>-design.md`.
+2. The skill runs a Socratic design conversation: explores project context, asks clarifying questions one at a time, proposes 2–3 approaches with trade-offs, and presents a design for approval. Review is focused: the agent drafts every section itself and surfaces only the 3–6 decision points that need your judgment, instead of walking you through each section.
+3. The approved design is saved to `docs/features/<feature-name>/<feature-name>-design.md`. It ends with a **Mechanism risk areas** section — one-line flags for components whose internals are unspecified (crawlers, parsers, heuristics, external integrations). These aren't resolved at design time; they're the persisted handoff to milestone planning.
 4. Brainstorming asks: "Would you like a PRD?" This step is optional.
-5. If yes, `creating-prd` activates. It asks seven discovery questions conversationally, then drafts a 15-section document in two parts — business context (overview, goals, user stories, sequencing) and implementation detail (requirements, acceptance criteria, open questions, risks). Saved to `docs/features/<feature-name>/prd.md`.
+5. If yes, `creating-prd` activates. It asks seven discovery questions conversationally, then drafts a 15-section document in two parts — business context (overview, goals, user stories, sequencing) and implementation detail (requirements, acceptance criteria, open questions, risks). Unresolved mechanism risk areas from the design carry forward as Q-### open questions. The default review style is focused: full draft, with a short "needs your input" list up front. Saved to `docs/features/<feature-name>/prd.md`.
 6. creating-prd asks: "Would you like an implementation plan?" Also optional.
-7. If yes, `milestone-planning` activates. It decomposes the work into milestones — each one scoped to be reviewable by a human in a single PR sitting. For each milestone it generates a self-contained execution prompt. The full plan is saved to `docs/features/<feature-name>/plan.md`.
+7. If yes, `milestone-planning` activates. It decomposes the work into milestones — each one scoped to be reviewable by a human in a single PR sitting. It then runs **LLD triage**: mechanism-risk flags from the design and PRD are triaged (would two competent implementers build this differently?), resolved interactively with the user, and written into the owning milestone as a binding **Technical Approach** — algorithm, data shapes, API specifics, fallback rules. Conventional components (CRUD, UI, glue) deliberately get none. For each milestone it generates a self-contained execution prompt. The full plan is saved to `docs/features/<feature-name>/plan.md`.
 8. **The skill stops.** It does not offer to begin execution. The user opens a new session for each milestone.
 
 Each milestone runs in its own session because planning-phase context contaminates execution decisions. A session that starts mid-planning carries assumptions that muddle implementation choices. Starting clean means the agent reasons from the plan and PRD, not from the conversation that produced them.
@@ -84,7 +122,7 @@ When a feature's design changes mid-development, all three planning skills suppo
 
 - **brainstorming** — Design refinement through Socratic dialogue; Create Mode for new features, Revision Mode for focused delta updates to existing designs
 - **creating-prd** — Lightweight PRD from spec or rough idea; 15-section two-part structure; Create Mode and Update Mode with automatic change log
-- **milestone-planning** — Decompose a feature into human-PR-reviewable milestones with self-contained execution prompts; Create Mode and Update Mode with three flows (in-place, revision, additive)
+- **milestone-planning** — Decompose a feature into human-PR-reviewable milestones with self-contained execution prompts; LLD triage resolves mechanism-level detail into per-milestone Technical Approach sections; Create Mode and Update Mode with three flows (in-place, revision, additive)
 
 ### Routing
 

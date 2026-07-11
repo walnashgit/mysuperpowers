@@ -35,14 +35,15 @@ Do not begin either mode's checklist until the mode is confirmed.
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Read source material** — PRD at `docs/features/<feature-name>/prd.md` if it exists; otherwise the brainstorming spec from the current session
+1. **Read source material** — PRD at `docs/features/<feature-name>/prd.md` if it exists; otherwise the brainstorming spec from the current session. Also read the design doc at `docs/features/<feature-name>/<feature-name>-design.md` if it exists (architecture context + Mechanism risk areas for LLD triage)
 2. **Confirm intent** — get explicit yes before drafting anything
 3. **Ask presentation style** — milestone-by-milestone or full draft
 4. **Determine file path** — confirm `docs/features/<kebab-name>/plan.md`
 5. **Defensive check** — if plan.md already exists at the path (unexpected in Create Mode), stop and offer to switch to Update Mode instead
 6. **Decompose into milestones** — apply granularity rules; define all required fields for each milestone
-7. **Draft and present per chosen style** — wait for approval before saving
-8. **Save plan.md then STOP** — do not chain into execution; the user starts each milestone in a fresh session
+7. **LLD triage + Technical Approach** — collect mechanism-risk flags from the design doc and PRD, triage which components need low-level design, resolve each with the user, write a Technical Approach into the owning milestone
+8. **Draft and present per chosen style** — wait for approval before saving
+9. **Save plan.md then STOP** — do not chain into execution; the user starts each milestone in a fresh session
 
 For Update Mode, see the **Update Mode** section below.
 
@@ -61,6 +62,7 @@ digraph milestone_planning {
     "plan.md exists?\n(unexpected)" [shape=diamond];
     "Stop: offer Update Mode" [shape=box];
     "Decompose into milestones" [shape=box];
+    "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach" [shape=box];
     "Draft and present\nper chosen style" [shape=box];
     "User approves?" [shape=diamond];
     "Save plan.md" [shape=box];
@@ -77,7 +79,8 @@ digraph milestone_planning {
     "Determine file path" -> "plan.md exists?\n(unexpected)";
     "plan.md exists?\n(unexpected)" -> "Stop: offer Update Mode" [label="yes"];
     "plan.md exists?\n(unexpected)" -> "Decompose into milestones" [label="no"];
-    "Decompose into milestones" -> "Draft and present\nper chosen style";
+    "Decompose into milestones" -> "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach";
+    "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach" -> "Draft and present\nper chosen style";
     "Draft and present\nper chosen style" -> "User approves?";
     "User approves?" -> "Draft and present\nper chosen style" [label="no, revise"];
     "User approves?" -> "Save plan.md" [label="yes"];
@@ -91,6 +94,8 @@ digraph milestone_planning {
 
 Look for `docs/features/<feature-name>/prd.md`. If it exists, read it — this is the primary input for decomposition. If not, use the brainstorming spec from the current session. If neither is available, ask the user to describe the feature goal before continuing.
 
+Also read `docs/features/<feature-name>/<feature-name>-design.md` if it exists — it supplies architectural context for decomposition and the **Mechanism risk areas** section consumed by LLD triage (Step 7). Where the design and PRD disagree, the PRD governs.
+
 ### Step 2: Confirm intent
 
 Even when invoked explicitly, confirm before producing anything:
@@ -101,7 +106,9 @@ If no, stop and wait. If yes, continue.
 
 ### Step 3: Ask presentation style
 
-> "How would you like to review the plan — milestone by milestone so we can refine each one, or as a complete first draft you review all at once?"
+> "How would you like to review the plan — **focused review** (I draft everything, then point you at the decomposition and sequencing choices that need your input — recommended), **milestone by milestone**, or a **complete draft** you read all at once?"
+
+Note: LLD triage (Step 7) is always interactive regardless of the style chosen here — mechanism decisions need the user either way. The style only governs how the drafted plan is reviewed.
 
 Hold the answer — it determines how Step 7 runs.
 
@@ -133,14 +140,40 @@ Break the work into milestones using the rules in **Milestone Granularity** belo
 - **Files affected** — list of expected files to change
 - **Dependencies** — plain language: "None" or "Requires Milestone N to be complete (reason)"
 - **Completion checklist** — the standard four items (see **plan.md Structure**)
+- **Technical Approach** — only for milestones containing LLD-flagged components; produced in Step 7
 - **Execution prompt** — generated from **Execution Prompt Template**
 
-### Step 7: Draft and present per chosen style
+### Step 7: LLD triage + Technical Approach
 
+The execution session is a fresh context with the least information of anyone in the workflow. Any mechanism left unspecified here is silently delegated to it. This step decides — deliberately, with the user — what gets specified and what is genuinely left to the implementer.
+
+**Collect candidates** from three sources:
+1. The design doc's **Mechanism risk areas** section (if present)
+2. PRD `Q-###` items marked "mechanism unspecified"
+3. Your own scan of the milestones: any component involving external integrations, crawling/scraping/parsing, extraction heuristics, matching/detection logic, or non-trivial algorithms
+
+**Triage each candidate** with this test: *would two competent implementers build materially different internals, in a way the executing agent's own tests wouldn't catch as wrong?*
+- **Yes → needs LLD.** Typical: query construction against an external API, page-parsing strategy, email/entity extraction heuristics, confidence thresholds, retry/fallback decision rules.
+- **No → skip.** Typical: CRUD endpoints, standard UI screens, ORM models, glue code. Do NOT write LLD for these — it bloats the plan and goes stale.
+
+**Resolve interactively.** For each flagged component, present the concrete open choices in one batch with your recommended answer for each (e.g. "Email discovery: I propose Google Custom Search API with query `"<PI name>" <institution> email site:.edu`, top-3 results fetched, regex + obfuscation patterns for extraction, and a domain-match check against the institution before trusting a hit. Three things need your call: API vs scraping, what counts as a confident match, and retry cadence for not-found leads."). Let the user decide only the genuinely open items; take silence on your recommendations as acceptance after confirmation.
+
+**Write the Technical Approach** into the owning milestone (see plan.md Structure). Content per flagged component:
+- The algorithm/flow as numbered steps or short pseudocode
+- Key data shapes (inputs, outputs, stored fields)
+- External API specifics: endpoints, query construction, rate limits, quotas
+- Failure and fallback decision rules (what routes where, and when)
+- Explicit **"implementer's discretion"** markers for anything intentionally left open
+
+Keep each component's LLD to roughly 20–60 lines — enough to remove ambiguity, not an implementation. If a mechanism can't be specified because nobody knows the answer yet (e.g. unknown data quality of an external source), propose a **spike milestone** to validate the approach instead of guessing.
+
+### Step 8: Draft and present per chosen style
+
+- **Focused review (recommended):** Present the complete plan, but lead with the items needing the user's judgment: decomposition choices that could reasonably go another way, dependency/sequencing decisions, and any milestone whose scope you were unsure about. Name the milestones that are conventional in one line. Resolve the input items, then get overall approval. (Technical Approach content was already user-approved in Step 7 — don't re-litigate it.)
 - **Milestone-by-milestone:** Present each milestone and wait for thumbs-up before continuing. Revise and re-present if the user wants changes.
 - **Full draft:** Present the complete plan in one block. Wait for overall approval before saving.
 
-### Step 8: Save plan.md then STOP
+### Step 9: Save plan.md then STOP
 
 Write the approved plan to the file path from Step 4. Always save to the repo — never leave plan.md as conversation-only output.
 
@@ -281,7 +314,7 @@ Use when the change affects only milestones that have not yet been executed, or 
      > "Milestone N has completed checklist items. Editing it in-place may invalidate committed work from execution. Proceed anyway?"
      Wait for explicit user confirmation. If they decline: skip this milestone or stop, per their choice.
    - If no items are checked: proceed without warning
-   - Walk through the milestone field by field (Goal, Files affected, Dependencies, Completion checklist, Execution prompt): quote the current value, propose the specific change, wait for approval, apply in-place
+   - Walk through the milestone field by field (Goal, Files affected, Dependencies, Technical Approach if present, Completion checklist, Execution prompt): quote the current value, propose the specific change, wait for approval, apply in-place. If the change introduces a new mechanism-risky component, run the LLD triage test on it and add or extend the Technical Approach accordingly
 4. Preserve all milestone numbers — do not renumber
 
 ---
@@ -296,7 +329,7 @@ Use when the change supersedes or reworks something already executed.
    > "Revision milestone M already exists in the plan. Adding Milestone N (Revision) now — both revisions will coexist. Proceed?"
    Wait for confirmation.
 4. Construct the new milestone using the format `### Milestone N (Revision): <name>`
-5. Fill in all required fields (see **Revision and Additive Milestone Blocks** in plan.md Structure)
+5. Fill in all required fields (see **Revision and Additive Milestone Blocks** in plan.md Structure). If the milestone contains mechanism-risky components, run the LLD triage test and include a Technical Approach
 6. Append the milestone to the end of plan.md, after all existing milestones
 
 ---
@@ -308,7 +341,7 @@ Use when the change is a pure scope expansion — new work without modifying exi
 1. Ask what's being added and why it wasn't in the original plan
 2. Determine the next available integer: N+1
 3. Construct the new milestone using the format `### Milestone N (Additive): <name>`
-4. Fill in all required fields (see **Revision and Additive Milestone Blocks** in plan.md Structure). No Supersedes field for additive milestones.
+4. Fill in all required fields (see **Revision and Additive Milestone Blocks** in plan.md Structure). No Supersedes field for additive milestones. If the milestone contains mechanism-risky components, run the LLD triage test and include a Technical Approach.
 5. Append the milestone to the end of plan.md, after all existing milestones
 
 ---
@@ -349,6 +382,9 @@ The approved plan file must follow this layout exactly. Execution sessions depen
 **Files affected:** list of expected files
 **Dependencies:** None (or "Requires Milestone N to be complete — reason")
 
+**Technical Approach:** *(only present when the milestone contains LLD-flagged components — omit the field entirely otherwise)*
+Mechanism-level spec produced in the LLD triage step: algorithm/flow, key data shapes, external API specifics, failure/fallback rules, and explicit "implementer's discretion" markers.
+
 **Completion checklist:**
 - [ ] Tests written and passing
 - [ ] Code review requested and addressed
@@ -375,6 +411,7 @@ Completion notes and integration outcome are left blank in the plan — the exec
 **Dependencies:** None (or "Requires Milestone N to be complete — reason")
 **Supersedes:** Milestone X (optional — only include if there is a direct relationship to a prior milestone)
 **Change summary:** 1-2 sentences describing what prior work is being reworked, superseded, or corrected, and why.
+**Technical Approach:** *(only when the milestone contains LLD-flagged components — omit otherwise)*
 
 **Completion checklist:**
 - [ ] Tests written and passing
@@ -397,6 +434,7 @@ Completion notes and integration outcome are left blank in the plan — the exec
 **Files affected:** list of expected files
 **Dependencies:** None (or "Requires Milestone N to be complete — reason")
 **Change summary:** 1-2 sentences describing what new scope is being added and why it wasn't in the original plan.
+**Technical Approach:** *(only when the milestone contains LLD-flagged components — omit otherwise)*
 
 **Completion checklist:**
 - [ ] Tests written and passing
@@ -427,6 +465,11 @@ You are executing Milestone N of the feature-name feature in mysuperpowers. The 
 Read the following for context:
 - Plan: docs/features/feature-name/plan.md (find Milestone N)
 - PRD (if it exists): docs/features/feature-name/prd.md
+- Design (if it exists): docs/features/feature-name/feature-name-design.md — architecture, component boundaries, and design intent
+
+Precedence when documents disagree: plan > PRD > design. The design doc may predate requirement changes — use it for architectural context, never to override the PRD or plan.
+
+If Milestone N has a Technical Approach section, it is binding: implement the specified mechanism, not your own alternative. Items marked "implementer's discretion" are yours to decide. If implementation reveals the specified approach is wrong or infeasible, deviate — and record the deviation and reason in the completion notes.
 
 ## Before starting
 Verify in plan.md that prior milestones' completion checklists are fully checked. If a dependency milestone is incomplete, stop and tell me — do not proceed.
@@ -495,3 +538,6 @@ If the user asks to begin implementation during or after planning, politely decl
 | "The PRD hasn't been updated, but the user wants to proceed — I can skip the alignment check next time" | NO. Always ask about PRD alignment. Once per Update Mode session. The user decides whether to update the PRD first, not you. |
 | "I'll renumber the milestones to keep things clean after adding a revision" | NO. Renumbering is forbidden. Revision and additive milestones append at the end with the next available integer. |
 | "I'll rewrite the whole plan — the structure has gotten messy" | NO. Update in place. Flow A edits only affected milestones. Flows B and C append only. Untouched milestones stay exactly as they are. |
+| "The executing agent is smart — it can figure out the crawling/parsing/extraction details itself" | NO. The execution session has the least context of anyone in the workflow. If two competent implementers would build it differently, it needs a Technical Approach — decided here, with the user. |
+| "I'll write a Technical Approach for every milestone to be thorough" | NO. LLD only for components that pass the triage test. CRUD, standard UI, and glue get none — blanket LLD bloats the plan and goes stale. |
+| "This mechanism is unknowable right now, so I'll just spec my best guess as binding" | NO. If nobody can answer it yet, propose a spike milestone to validate the approach instead of guessing. |

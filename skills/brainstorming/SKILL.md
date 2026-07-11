@@ -43,7 +43,7 @@ You MUST create a task for each of these items and complete them in order:
 2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
-5. **Present design** — in sections scaled to their complexity, get user approval after each section
+5. **Present design (focused review)** — draft all sections, then direct the user's attention to the few decision points that need their input; summarize conventional sections briefly (see Presenting the design)
 6. **Confirm feature name** — ask the user for the kebab-case feature name; determines the save path for the design doc
 7. **Write design doc** — save to `docs/features/<feature-name>/<feature-name>-design.md` and commit
 8. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
@@ -102,6 +102,7 @@ digraph brainstorming {
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
+- Only ask questions you genuinely cannot answer from project context or reasonable convention. If you can make a defensible assumption, make it and surface it later as a decision point in the design review instead of asking now — the user's time goes to decisions, not confirmations
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
@@ -112,11 +113,14 @@ digraph brainstorming {
 - Present options conversationally with your recommendation and reasoning
 - Lead with your recommended option and explain why
 
-**Presenting the design:**
+**Presenting the design (focused review):**
 
-- Once you believe you understand what you're building, present the design
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
+- Once you believe you understand what you're building, draft the complete design yourself — do NOT walk the user through every section asking "does this look right?"
+- Split the presentation into two tiers:
+  - **Decision points** — choices only the user can make, trade-offs with real consequences, and assumptions you made without evidence. Present each explicitly with your recommendation and wait for the user's call. This is what the review conversation is for.
+  - **Conventional sections** — architecture that follows directly from the decisions, standard patterns, glue. Name them in one line ("Sections X, Y, Z are conventional — skim the doc if you want detail") and move on.
+- Aim for 3–6 decision points. More than ~8 usually means the feature needs decomposition.
+- Scale each written section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
 
@@ -142,6 +146,7 @@ Confirm the feature name with the user before writing the design doc. If a name 
 > "What's the kebab-case name for this feature? I'll save the design to `docs/features/<name>/<name>-design.md`."
 
 - Write the validated design (spec) to `docs/features/<feature-name>/<feature-name>-design.md`
+- Include a **Mechanism risk areas** section at the end of the design doc: one line per component whose *internal mechanism* is unspecified and where two competent implementers would build materially different things — external integrations, crawling/scraping/parsing, extraction heuristics, matching/detection logic, non-trivial algorithms. Format: `<component>: <what's unspecified> — needs LLD at planning.` If none, write "None identified." Do NOT resolve the mechanisms here — this section is the persisted handoff that lets `milestone-planning` resolve them in a later session. Requirements may still shift before planning; specifying mechanisms now would be premature.
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
@@ -152,6 +157,7 @@ After writing the spec document, look at it with fresh eyes:
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+5. **Mechanism risk scan:** For each component, would two competent implementers build materially different internals from this description? If yes and it isn't listed in Mechanism risk areas, add it there (one line — don't resolve it).
 
 Fix any issues inline. No need to re-review — just fix and move on.
 
@@ -260,7 +266,7 @@ After the user confirms the summary:
 
 > "Do you want me to update the design file to reflect this change?"
 
-- **Yes** — overwrite `docs/features/<feature-name>/<feature-name>-design.md` with the updated design. Then continue.
+- **Yes** — overwrite `docs/features/<feature-name>/<feature-name>-design.md` with the updated design. Re-check the **Mechanism risk areas** section while doing so: a revision can add new risk areas (new mechanism-heavy components) or remove obsolete ones. Then continue.
 - **No** — continue.
 
 > "Do you want to update the PRD to reflect this change?"
@@ -300,6 +306,8 @@ Do NOT write or modify PRD or plan files from this skill. Do NOT invoke any impl
 | "I'll just update the PRD myself while I have context — it's faster than handing off" | NO. Brainstorming never writes PRDs or plans. Summarize the change, confirm it, then hand off to `creating-prd`. |
 | "The user described the change clearly enough — I don't need to read the existing files first" | NO. Always read the design file, PRD, and plan before the revision conversation. They are the anchor and may contain constraints the user didn't mention. |
 | "The change summary is confirmed — I'll update the design file and move straight to offering the PRD" | NO. Always ask explicitly before updating the design file. Confirmation of the summary is not the same as authorization to write. |
+| "This component's internals are tricky — I'll spec the mechanism now while I have context" | NO. Requirements can still shift before planning (they often do). Flag it in Mechanism risk areas; `milestone-planning` resolves it once the PRD is stable. |
+| "I'll walk the user through every design section and ask if each looks right" | NO. Focused review: draft everything, surface only the 3–6 decision points that need the user's judgment, and summarize the rest in one line. |
 
 ---
 

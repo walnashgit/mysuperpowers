@@ -38,7 +38,7 @@ Do not begin either mode's checklist until the mode is confirmed.
 You MUST create a task for each of these items and complete them in order:
 
 1. **Confirm intent** — run fallback orienting questions first if no prior brainstorming; get explicit yes before any drafting
-2. **Ask presentation style** — section-by-section or full draft
+2. **Ask presentation style** — focused review (recommended), section-by-section, or full draft
 3. **Determine feature name** — ask if not obvious; this determines the path `docs/features/<feature-name>/prd.md`
 4. **Defensive check** — if a PRD already exists at the path (unexpected in Create Mode), stop and offer to switch to Update Mode instead
 5. **Run discovery questions** — conversationally; flag assumptions as Q-### items
@@ -112,7 +112,7 @@ If the user says no, stop and wait. If yes, continue.
 
 ### Step 2: Ask presentation style
 
-> "How would you like to review the PRD as I write it — section by section so we can refine each part, or as a complete first draft you review all at once?"
+> "How would you like to review the PRD — **focused review** (I draft everything, then point you at just the items that need your input — recommended), **section by section**, or a **complete draft** you read end to end?"
 
 Hold the answer — it determines how Step 6 runs.
 
@@ -141,12 +141,15 @@ Run the questions from the **Discovery Questions** section below. Ask them conve
 
 If brainstorming context already answers a question, skip it or briefly confirm: "I have [X] from the design doc — is that still accurate?" Fill remaining gaps with reasonable assumptions and flag each one as a `Q-###` item for the Open Questions section.
 
+If the design doc has a **Mechanism risk areas** section, carry every item that discovery didn't resolve into Open Questions as a `Q-###` ("mechanism unspecified: ..."). Do NOT resolve mechanism-level detail in the PRD — that happens during `milestone-planning` (LLD triage). The Q-### entries are how the flags survive the session gap between PRD and plan.
+
 ### Step 6: Draft and present per chosen style
 
 Draft the 15 sections per the **PRD Structure** below. Write for a solo developer audience — no jargon. Aim for 2–3 printed pages total; allow longer when the content genuinely requires it.
 
 Then present per the style chosen in Step 2:
 
+- **Focused review (recommended):** Present the complete draft, but lead with a short review guide in two lists: (1) **Needs your input** — decisions you made on the user's behalf, open trade-offs, and consequential assumptions (typically living in Goals & Success Metrics, Out of Scope, Requirements, Open Questions). Quote the specific decision, not the whole section, and give your recommendation. (2) **Standard** — sections derived mechanically from the design and conversation; name them in one line so the user can skim or skip. Resolve the input items conversationally, apply the outcomes, then get overall approval.
 - **Section-by-section:** Present each section and wait for the user's thumbs-up before continuing. If they want changes, revise and re-present that section before moving on.
 - **Full draft:** Present the complete PRD in one block. Wait for overall approval before saving.
 
