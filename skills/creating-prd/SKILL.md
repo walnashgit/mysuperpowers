@@ -143,6 +143,13 @@ If brainstorming context already answers a question, skip it or briefly confirm:
 
 If the design doc has a **Mechanism risk areas** section, carry every item that discovery didn't resolve into Open Questions as a `Q-###` ("mechanism unspecified: ..."). Do NOT resolve mechanism-level detail in the PRD — that happens during `milestone-planning` (LLD triage). The Q-### entries are how the flags survive the session gap between PRD and plan.
 
+If the design doc has a **Harness Design** section (AI-agent / LLM features), carry every dimension forward — the PRD is what `milestone-planning` decomposes from, so a dimension that doesn't become a requirement here tends to vanish from the plan:
+
+- Designed dimensions become Requirements — typically NFRs (observability, memory, guardrails, failure/fallback, cost controls) with the design's chosen mechanism named.
+- **Evals get functional treatment, not just a metric.** Any LLM decision point that gates an autonomous action needs an explicit evals requirement (labeled eval set, threshold validation) with its own acceptance criterion. A success metric like "zero mis-bookings" is not a substitute.
+- Dimensions the user decided not to build go in Out of Scope explicitly, with the deferral reason.
+- Dimensions marked N/A in the design need nothing in the PRD.
+
 ### Step 6: Draft and present per chosen style
 
 Draft the 15 sections per the **PRD Structure** below. Write for a solo developer audience — no jargon. Aim for 2–3 printed pages total; allow longer when the content genuinely requires it.
@@ -455,3 +462,5 @@ Acceptance Criteria IDs reference their parent User Story (AC-001.x belongs to U
 | "The user said 'update the PRD' but the scope isn't clear — I'll update everything that seems relevant" | NO. Ask first. Confirm the list of affected sections explicitly before editing anything. |
 | "This change is minor, I'll skip the change log entry" | NO. Every Update Mode save gets a dated change log entry. No exceptions. |
 | "I don't see a design file but the PRD exists — I'll use the PRD as context and proceed" | WARN the user the design file is missing. Only proceed if they explicitly confirm. The PRD alone is an incomplete anchor. |
+| "Draft quality is already a success metric — I don't need an evals requirement" | NO. Metrics measure outcomes; evals gate releases. An LLM decision that triggers an autonomous action needs an evals requirement with its own acceptance criterion. |
+| "The harness details (observability, memory, evals) are technical — they belong in the design, not the PRD" | NO. Requirements the PRD omits don't reach the plan. Harness dimensions from the design become NFRs here or go in Out of Scope explicitly. |

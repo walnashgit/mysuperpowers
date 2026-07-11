@@ -42,8 +42,9 @@ You MUST create a task for each of these items and complete them in order:
 5. **Defensive check** — if plan.md already exists at the path (unexpected in Create Mode), stop and offer to switch to Update Mode instead
 6. **Decompose into milestones** — apply granularity rules; define all required fields for each milestone
 7. **LLD triage + Technical Approach** — collect mechanism-risk flags from the design doc and PRD, triage which components need low-level design, resolve each with the user, write a Technical Approach into the owning milestone
-8. **Draft and present per chosen style** — wait for approval before saving
-9. **Save plan.md then STOP** — do not chain into execution; the user starts each milestone in a fresh session
+8. **Design→plan traceability check** — walk the design's component map and Harness Design section; every commitment maps to a milestone or lands in the plan's "Deferred from design" list with the user's sign-off
+9. **Draft and present per chosen style** — wait for approval before saving
+10. **Save plan.md then STOP** — do not chain into execution; the user starts each milestone in a fresh session
 
 For Update Mode, see the **Update Mode** section below.
 
@@ -63,6 +64,7 @@ digraph milestone_planning {
     "Stop: offer Update Mode" [shape=box];
     "Decompose into milestones" [shape=box];
     "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach" [shape=box];
+    "Traceability check:\nevery design commitment\n→ milestone or deferral" [shape=box];
     "Draft and present\nper chosen style" [shape=box];
     "User approves?" [shape=diamond];
     "Save plan.md" [shape=box];
@@ -80,7 +82,8 @@ digraph milestone_planning {
     "plan.md exists?\n(unexpected)" -> "Stop: offer Update Mode" [label="yes"];
     "plan.md exists?\n(unexpected)" -> "Decompose into milestones" [label="no"];
     "Decompose into milestones" -> "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach";
-    "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach" -> "Draft and present\nper chosen style";
+    "LLD triage:\nresolve mechanism detail,\nwrite Technical Approach" -> "Traceability check:\nevery design commitment\n→ milestone or deferral";
+    "Traceability check:\nevery design commitment\n→ milestone or deferral" -> "Draft and present\nper chosen style";
     "Draft and present\nper chosen style" -> "User approves?";
     "User approves?" -> "Draft and present\nper chosen style" [label="no, revise"];
     "User approves?" -> "Save plan.md" [label="yes"];
@@ -110,7 +113,7 @@ If no, stop and wait. If yes, continue.
 
 Note: LLD triage (Step 7) is always interactive regardless of the style chosen here — mechanism decisions need the user either way. The style only governs how the drafted plan is reviewed.
 
-Hold the answer — it determines how Step 7 runs.
+Hold the answer — it determines how Step 9 runs.
 
 ### Step 4: Determine file path
 
@@ -143,6 +146,8 @@ Break the work into milestones using the rules in **Milestone Granularity** belo
 - **Technical Approach** — only for milestones containing LLD-flagged components; produced in Step 7
 - **Execution prompt** — generated from **Execution Prompt Template**
 
+**Evals milestone (AI-agent features):** if the design's Harness Design section includes evals — and always when an LLM decision point gates an autonomous action (send, book, delete, pay) — the eval work must appear explicitly in the plan: a labeled eval set, an eval harness/runner, threshold validation for autonomy gates, and a regression run wired into prompt/model changes. Default to proposing a **dedicated evals milestone**, sequenced before the milestone that enables the autonomous action; fold eval tasks into the owning milestones only if the user prefers. If the user declines evals entirely, record that in the plan's "Deferred from design" list — never drop it silently. Observability, guardrails, and other harness dimensions follow the same rule: they get milestone work or an explicit deferral, decided in Step 8.
+
 ### Step 7: LLD triage + Technical Approach
 
 The execution session is a fresh context with the least information of anyone in the workflow. Any mechanism left unspecified here is silently delegated to it. This step decides — deliberately, with the user — what gets specified and what is genuinely left to the implementer.
@@ -167,13 +172,24 @@ The execution session is a fresh context with the least information of anyone in
 
 Keep each component's LLD to roughly 20–60 lines — enough to remove ambiguity, not an implementation. If a mechanism can't be specified because nobody knows the answer yet (e.g. unknown data quality of an external source), propose a **spike milestone** to validate the approach instead of guessing.
 
-### Step 8: Draft and present per chosen style
+### Step 8: Design→plan traceability check
+
+The decomposition in Step 6 is built from the PRD's requirements — design commitments that never became FRs (harness infrastructure especially: evals, observability, memory, guardrails) can silently fall out here. This step catches them before the plan is presented.
+
+Walk two lists from the design doc and, for each item, name the milestone that delivers it:
+
+1. **The component map** (or equivalent architecture section) — every component belongs to some milestone.
+2. **The Harness Design section** (AI-agent features) — every dimension not marked N/A belongs to some milestone. Check evals against the Step 6 rule above.
+
+For any item with no owning milestone, resolve it with the user: add it to an existing milestone, create a new one, or defer it deliberately. Deferred items go in the plan's **Deferred from design** list (see plan.md Structure) — one line each: what, why, and what would trigger revisiting. An empty traceability gap list is the goal; a silent one is the failure.
+
+### Step 9: Draft and present per chosen style
 
 - **Focused review (recommended):** Present the complete plan, but lead with the items needing the user's judgment: decomposition choices that could reasonably go another way, dependency/sequencing decisions, and any milestone whose scope you were unsure about. Name the milestones that are conventional in one line. Resolve the input items, then get overall approval. (Technical Approach content was already user-approved in Step 7 — don't re-litigate it.)
 - **Milestone-by-milestone:** Present each milestone and wait for thumbs-up before continuing. Revise and re-present if the user wants changes.
 - **Full draft:** Present the complete plan in one block. Wait for overall approval before saving.
 
-### Step 9: Save plan.md then STOP
+### Step 10: Save plan.md then STOP
 
 Write the approved plan to the file path from Step 4. Always save to the repo — never leave plan.md as conversation-only output.
 
@@ -371,8 +387,13 @@ The approved plan file must follow this layout exactly. Execution sessions depen
 ## Overview
 1-2 sentence summary of the plan approach.
 
+## Deferred from design
+- <design commitment> — <why deferred> — revisit when <trigger>
+
 ## Milestones
 ```
+
+The **Deferred from design** section is present only when the Step 8 traceability check produced user-approved deferrals — omit it entirely when every design commitment has an owning milestone. It is the plan's record that a gap is deliberate, not missed.
 
 **Each milestone block (repeat for each milestone, separated by `---`):**
 
@@ -541,3 +562,6 @@ If the user asks to begin implementation during or after planning, politely decl
 | "The executing agent is smart — it can figure out the crawling/parsing/extraction details itself" | NO. The execution session has the least context of anyone in the workflow. If two competent implementers would build it differently, it needs a Technical Approach — decided here, with the user. |
 | "I'll write a Technical Approach for every milestone to be thorough" | NO. LLD only for components that pass the triage test. CRUD, standard UI, and glue get none — blanket LLD bloats the plan and goes stale. |
 | "This mechanism is unknowable right now, so I'll just spec my best guess as binding" | NO. If nobody can answer it yet, propose a spike milestone to validate the approach instead of guessing. |
+| "The milestones obviously cover the design — I'll skip the traceability walk" | NO. Walk the component map and Harness Design section item by item. Harness infrastructure (evals, observability, memory) is exactly what falls out when decomposing from FRs — "obviously covered" is how it goes missing. |
+| "Evals aren't a feature — they can be added after the pilot ships" | NO. An LLM decision gating an autonomous action needs its eval milestone sequenced before that autonomy goes live. Post-hoc metrics measure damage; evals prevent it. If the user defers evals, it goes in Deferred from design — never silently. |
+| "The design mentions observability/memory but the PRD has no FR for it, so it's out of scope" | NO. That's a traceability gap, not a scope decision. Surface it in Step 8 and let the user decide: milestone or explicit deferral. |

@@ -122,6 +122,8 @@ digraph brainstorming {
 - Aim for 3–6 decision points. More than ~8 usually means the feature needs decomposition.
 - Scale each written section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
 - Cover: architecture, components, data flow, error handling, testing
+- Include a **high-level architecture diagram** (mermaid or ASCII) of the whole solution — components, data flow, external services, human touchpoints. Mandatory for any feature with more than one component or an external integration, regardless of app type; only a trivial single-component change may skip it
+- For AI-agent / LLM features, also cover the Harness Design dimensions (see **AI-Agent Features: Harness Design** below) — this is mandatory, not optional depth
 - Be ready to go back and clarify if something doesn't make sense
 
 **Design for isolation and clarity:**
@@ -130,6 +132,28 @@ digraph brainstorming {
 - For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
 - Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
 - Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
+
+**AI-Agent Features: Harness Design (mandatory coverage):**
+
+Gate: *does any component of this feature call an LLM?* If yes, the design doc MUST contain a **Harness Design** section that addresses every dimension in this table. Each dimension is either designed or marked `N/A — <one-line reason>`. Silence is not an option; N/A-with-reason is. Conversational coverage during brainstorming does not count — the decisions must land in the written section, because the PRD and plan are built from the doc, not the conversation.
+
+The architecture diagram is not in this table because it is required of **every** design (see Presenting the design above) — for agent features, make sure it shows the LLM call sites and the human approval touchpoints.
+
+| Dimension | What to decide |
+|---|---|
+| Orchestration pattern | Named explicitly — sequential pipeline / parallel / loop / router / graph / multi-agent — and why it fits |
+| Framework | LangGraph / LangChain / ADK / plain code / other. "No framework, plain code" is a valid decision but must be stated with reasoning |
+| Memory | Short-term (per-run state), long-term (cross-run persistence), retrieval strategy |
+| Observability | LLM tracing, structured logging, metrics, cost/token tracking |
+| Evals | Offline eval set for each LLM decision point; online quality metrics; regression gate before prompt/model changes |
+| Guardrails & HITL | Content/behavior constraints; where humans approve; the exact autonomy boundary |
+| Failure & fallback | Provider fallback, retry policy, degraded-mode behavior when the LLM is down or wrong |
+| Cost controls | Token budget, model tiering, rate limits, quota headroom on external APIs |
+
+Two hard requirements within the table:
+
+- **Autonomy-gating decisions need evals, not just metrics.** Any LLM decision point that gates an autonomous action (send, book, delete, pay) MUST have an eval plan — a labeled test set and a method for validating its threshold — before that autonomy ships. An online success metric ("zero mis-bookings") measures the damage; an eval prevents it.
+- **Harness dimensions are design commitments.** Anything designed here must survive into the PRD (as requirements) and the plan (as milestone work). Covering a dimension in the design and never planning it is the exact failure this section exists to prevent — `milestone-planning`'s traceability check will walk this table.
 
 **Working in existing codebases:**
 
@@ -146,6 +170,8 @@ Confirm the feature name with the user before writing the design doc. If a name 
 > "What's the kebab-case name for this feature? I'll save the design to `docs/features/<name>/<name>-design.md`."
 
 - Write the validated design (spec) to `docs/features/<feature-name>/<feature-name>-design.md`
+- Include the **high-level architecture diagram** in the architecture section (mandatory for multi-component features, any app type)
+- For AI-agent / LLM features, include the **Harness Design** section (all table dimensions, designed or N/A-with-reason) as a top-level section of the doc
 - Include a **Mechanism risk areas** section at the end of the design doc: one line per component whose *internal mechanism* is unspecified and where two competent implementers would build materially different things — external integrations, crawling/scraping/parsing, extraction heuristics, matching/detection logic, non-trivial algorithms. Format: `<component>: <what's unspecified> — needs LLD at planning.` If none, write "None identified." Do NOT resolve the mechanisms here — this section is the persisted handoff that lets `milestone-planning` resolve them in a later session. Requirements may still shift before planning; specifying mechanisms now would be premature.
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
@@ -158,6 +184,8 @@ After writing the spec document, look at it with fresh eyes:
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
 5. **Mechanism risk scan:** For each component, would two competent implementers build materially different internals from this description? If yes and it isn't listed in Mechanism risk areas, add it there (one line — don't resolve it).
+6. **Architecture diagram check:** Does the doc include a high-level architecture diagram (mermaid or ASCII) showing components, data flow, external services, and human touchpoints? Required for any feature with more than one component or an external integration — any app type. Add it if missing.
+7. **Harness coverage scan (AI-agent features only):** If any component calls an LLM, does the doc have a Harness Design section addressing every dimension in the table — orchestration pattern, framework, memory, observability, evals, guardrails/HITL, failure/fallback, cost controls — each either designed or marked N/A with a reason? Does every autonomy-gating LLM decision have an eval plan? Fix gaps before presenting to the user.
 
 Fix any issues inline. No need to re-review — just fix and move on.
 
@@ -266,7 +294,7 @@ After the user confirms the summary:
 
 > "Do you want me to update the design file to reflect this change?"
 
-- **Yes** — overwrite `docs/features/<feature-name>/<feature-name>-design.md` with the updated design. Re-check the **Mechanism risk areas** section while doing so: a revision can add new risk areas (new mechanism-heavy components) or remove obsolete ones. Then continue.
+- **Yes** — overwrite `docs/features/<feature-name>/<feature-name>-design.md` with the updated design. Re-check the **Mechanism risk areas** section while doing so: a revision can add new risk areas (new mechanism-heavy components) or remove obsolete ones. If the feature calls an LLM, also re-check the **Harness Design** section — a revision can change orchestration, add an LLM decision point that needs an eval plan, or make a dimension newly applicable; if the section is missing entirely (pre-dating this requirement), add it. Then continue.
 - **No** — continue.
 
 > "Do you want to update the PRD to reflect this change?"
@@ -308,6 +336,10 @@ Do NOT write or modify PRD or plan files from this skill. Do NOT invoke any impl
 | "The change summary is confirmed — I'll update the design file and move straight to offering the PRD" | NO. Always ask explicitly before updating the design file. Confirmation of the summary is not the same as authorization to write. |
 | "This component's internals are tricky — I'll spec the mechanism now while I have context" | NO. Requirements can still shift before planning (they often do). Flag it in Mechanism risk areas; `milestone-planning` resolves it once the PRD is stable. |
 | "I'll walk the user through every design section and ask if each looks right" | NO. Focused review: draft everything, surface only the 3–6 decision points that need the user's judgment, and summarize the rest in one line. |
+| "This agent feature is simple — a diagram, orchestration pattern, and evals section would be overkill" | NO. The Harness Design table is mandatory for any feature that calls an LLM. N/A-with-reason is cheap; a dimension silently skipped at design time never reaches the plan and never gets built. |
+| "The design is text-heavy already — prose describes the architecture fine without a diagram" | NO. Every multi-component design gets a high-level architecture diagram, whatever the app type. Prose hides missing arrows; a diagram exposes them. |
+| "We discussed observability and memory in conversation — that's covered" | NO. Only the written Harness Design section survives the session gap. The PRD and plan are built from the doc, not from this conversation. |
+| "Evals can wait — the pilot's success metrics will tell us if the LLM decisions are good" | NO. Metrics measure damage after it happens; evals prevent it. Any LLM decision gating an autonomous action needs an eval plan in the design. |
 
 ---
 
