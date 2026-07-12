@@ -1,6 +1,6 @@
 ---
 name: milestone-planning
-description: "Use after creating-prd or brainstorming when the user wants a sequenced implementation plan. Also activates when the user explicitly requests a 'milestone plan', 'implementation plan', or asks how to structure the work. Triggers on update scenarios too: 'update the plan', 'revise the plan', 'add a revision milestone', 'add an additive milestone', 'modify the plan for feature X'. Always confirms intent before producing. Does not activate for trivial one-session tasks."
+description: "Use after creating-prd or brainstorming when the user wants a sequenced implementation plan. Also activates when the user explicitly requests a 'milestone plan', 'implementation plan', or asks how to structure the work. Triggers on update scenarios too: 'update the plan', 'revise the plan', 'add a revision milestone', 'add an additive milestone', 'modify the plan for feature X'. Does not activate for trivial one-session tasks."
 ---
 
 <SUBAGENT-STOP>
@@ -529,7 +529,7 @@ A milestone is a logically coherent unit of work — a set of changes that belon
 1. Never start implementation from this skill
 2. Never produce a plan without explicit user confirmation
 3. **Never replace an existing plan.md without user approval.** In Create Mode, stop if plan.md exists at the target path and offer Update Mode. In Update Mode, the save step is an intentional replacement after the user has approved changes through the selected flow.
-4. The planning phase never commits — no code is produced during planning
+4. The planning phase never produces or commits application code — committing the planning documents themselves (design doc, prd.md, plan.md) is expected
 5. The execution phase does NOT commit during the TDD cycle — all changes remain uncommitted; finishing-a-development-branch checks for uncommitted changes, asks for user approval before committing, then presents integration options; the user always chooses the integration action (merge/PR/keep/discard)
 6. Never renumber milestones after the plan is created — insertions go at the end as new milestones with the next available number
 7. Always save plan.md to the repo — never leave as conversation-only output

@@ -17,33 +17,23 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 ## Instruction Priority
 
-mysuperpowers skills override default system prompt behavior, but **user instructions always take precedence**:
-
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest
 2. **mysuperpowers skills** — override default system behavior where they conflict
-3. **Default system prompt** — lowest priority
+3. **Default system prompt** — lowest
 
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+If the user's instructions and a skill conflict, follow the user. The user is in control.
 
 ## How to Access Skills
 
-**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+**Claude Code:** the `Skill` tool. When invoked, a skill's content is loaded — follow it directly. Never use the Read tool on skill files. **Copilot CLI** (`skill` tool) and **Gemini CLI** (`activate_skill`) work the same way.
 
-**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
-
-**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
-
-**In other environments:** Check your platform's documentation for how skills are loaded.
-
-## Platform Adaptation
-
-Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+Skills use Claude Code tool names. Non-CC platforms: tool equivalents are in `references/copilot-tools.md` and `references/codex-tools.md`; Gemini CLI gets its mapping via GEMINI.md.
 
 # Using Skills
 
 ## The Rule
 
-**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means you invoke it to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
 
 ```dot
 digraph skill_flow {
@@ -55,7 +45,7 @@ digraph skill_flow {
     "Invoke Skill tool" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
     "Has checklist?" [shape=diamond];
-    "Create TodoWrite todo per item" [shape=box];
+    "Create a task per\nchecklist item" [shape=box];
     "Follow skill exactly" [shape=box];
     "Respond (including clarifications)" [shape=doublecircle];
 
@@ -69,9 +59,9 @@ digraph skill_flow {
     "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
     "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
     "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
-    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Create a task per\nchecklist item" [label="yes"];
     "Has checklist?" -> "Follow skill exactly" [label="no"];
-    "Create TodoWrite todo per item" -> "Follow skill exactly";
+    "Create a task per\nchecklist item" -> "Follow skill exactly";
 }
 ```
 
@@ -81,48 +71,30 @@ These thoughts mean STOP—you're rationalizing:
 
 | Thought | Reality |
 |---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
+| "This is just a simple question / doesn't count as a task" | Questions and actions are tasks. Check for skills. |
+| "I need more context / let me explore or gather info first" | Skill check comes BEFORE clarifying questions. Skills tell you HOW to explore and gather. |
+| "This doesn't need a formal skill / the skill is overkill" | If a skill exists, use it. Simple things become complex. |
+| "I remember this skill" | Skills evolve. Read the current version. |
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
-| "The plan is approved, I should just start milestone 1 to be helpful" | NO. Planning ends in this session by design. Milestone execution happens in a fresh session so each milestone gets a clean context window. Stop after planning. The user will start the next session themselves. |
-| "The user said this is urgent, I'll skip the PRD and plan and just implement" | Only skip the planning flow if the user EXPLICITLY says to skip it. Don't infer urgency from tone and decide to bypass the workflow. Ask if you're unsure. |
+| "The plan is approved, I should just start milestone 1 to be helpful" | NO. Planning ends this session by design. Milestones execute in fresh sessions so each gets a clean context window. Stop after planning. |
+| "The user said this is urgent, I'll skip the PRD and plan and just implement" | Only skip the planning flow if the user EXPLICITLY says to skip it. Don't infer urgency from tone. Ask if unsure. |
 
 ## Skill Priority
 
-When multiple skills could apply, use this order:
+When multiple skills could apply:
 
 1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+2. **Implementation skills second** - these guide execution
 
-"Let's build X" → brainstorming first, then implementation skills.
-"Fix this bug" → debugging first, then domain-specific skills.
+"Let's build X" → brainstorming first. "Fix this bug" → debugging first.
 
 ## Two-Phase Workflow
 
-Development follows two distinct phases. Never merge them into one session.
+Development runs in two phases that never share a session:
 
-**Planning phase (single session):**
-1. User describes an idea or feature — `brainstorming` activates
-2. Socratic design refinement: explore context, clarify requirements, propose approaches, present and approve design, write spec
-3. After spec approval: "Would you like me to create a PRD?" — if yes, invoke `creating-prd`
-4. "Would you like me to create an implementation plan with milestones?" — if yes, invoke `milestone-planning`
-5. After `milestone-planning` produces the plan document — **STOP. Do not begin implementation.**
-
-**Execution phase (one fresh session per milestone):**
-1. User starts a new session and pastes a milestone execution prompt from the plan file
-2. `executing-from-plan` activates, overriding the planning flow
-3. Agent reads the PRD and plan for context, then executes only the current milestone
-4. Execution skills (`test-driven-development`, `systematic-debugging`, `requesting-code-review`, etc.) run as normal
-5. When the milestone is complete, the plan file is updated — **STOP. Do not chain into the next milestone.**
+- **Planning (single session):** `brainstorming` → optional `creating-prd` → optional `milestone-planning`. When the plan is saved — **STOP. Do not begin implementation.**
+- **Execution (one fresh session per milestone):** the user pastes a milestone execution prompt from plan.md; `executing-from-plan` routes it, and the execution skills (`test-driven-development`, `systematic-debugging`, code review, verification) take over. When the milestone completes — **STOP. Do not chain into the next.**
 
 ## Hard Rules
 

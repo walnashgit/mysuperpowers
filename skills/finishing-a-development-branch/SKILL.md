@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete, all tests pass, and you need to decide how to integrate or dispose of the work on the current branch
 ---
 
 # Finishing a Development Branch
@@ -143,7 +143,6 @@ Report: "Keeping branch <name> as-is."
 This will permanently delete:
 - Branch <name>
 - All commits: <commit-list>
-- Worktree at <path>
 
 Type 'discard' to confirm.
 ```

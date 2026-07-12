@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "Use before any creative work — creating features, building components, adding functionality, or modifying behavior — OR when revising an existing feature design. Triggers on: 'create feature X', 'build X', 'add functionality', 'update feature X', 'revise the design', 'change the plan for Y', 'modify the existing design'. Explores intent and design (new features) or focused change delta (revisions) before implementation."
+description: "Use before any creative work — creating features, building components, adding functionality, or modifying behavior — OR when revising an existing feature design. Triggers on: 'create feature X', 'build X', 'add functionality', 'update feature X', 'revise the design', 'change the plan for Y', 'modify the existing design'."
 ---
 
 # Brainstorming Ideas Into Designs

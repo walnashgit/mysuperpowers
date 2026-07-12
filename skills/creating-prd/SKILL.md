@@ -1,6 +1,6 @@
 ---
 name: creating-prd
-description: "Use after brainstorming spec approval when the user confirms they want a PRD, or when a brainstorming revision is complete and the PRD needs updating. Triggers on: 'create a PRD for X', 'write the requirements for X', 'update the PRD', 'revise the PRD', 'change the requirements for feature X', 'modify PRD for <feature>'. Always confirms before producing. Does not activate for trivial tasks."
+description: "Use after brainstorming spec approval when the user confirms they want a PRD, or when a brainstorming revision is complete and the PRD needs updating. Triggers on: 'create a PRD for X', 'write the requirements for X', 'update the PRD', 'revise the PRD', 'change the requirements for feature X', 'modify PRD for <feature>'. Does not activate for trivial tasks."
 ---
 
 <SUBAGENT-STOP>

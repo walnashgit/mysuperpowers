@@ -5,7 +5,7 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Requesting Code Review
 
-Dispatch mysuperpowers:code-reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Dispatch a code-review subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
 **Core principle:** Review early, review often.
 
@@ -35,7 +35,7 @@ git diff HEAD
 
 **2. Dispatch code-reviewer subagent:**
 
-Use Task tool with mysuperpowers:code-reviewer type, fill template at `code-reviewer.md`
+Dispatch a general-purpose subagent (the Agent tool in Claude Code). Its prompt is the template at `code-reviewer.md` in this skill's directory, with the placeholders filled in — the template is the reviewer's entire briefing, so fill it completely.
 
 **Placeholders:**
 - `{WHAT_WAS_IMPLEMENTED}` - What you just built
@@ -57,7 +57,7 @@ You: Let me request code review before proceeding.
 
 BASE=$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD)
 
-[Dispatch mysuperpowers:code-reviewer subagent]
+[Dispatch general-purpose subagent with filled code-reviewer.md template]
   WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
   PLAN_OR_REQUIREMENTS: Milestone 2 from docs/features/<feature-name>/plan.md
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types

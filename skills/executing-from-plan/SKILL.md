@@ -1,13 +1,11 @@
 ---
 name: executing-from-plan
 description: >
-  Activates when a session begins with a milestone execution prompt pasted from plan.md, or
+  Use when a session begins with a milestone execution prompt pasted from plan.md, or
   when the user explicitly says "execute milestone N", "run milestone N", "start milestone N
   from the plan", "I'm executing milestone N", or "let's do milestone N" (N can be a digit
   or written number). MUST trigger on the exact opening phrase "You are executing Milestone N
-  of the <feature-name> feature in mysuperpowers". When active: suppresses brainstorming,
-  creating-prd, and milestone-planning; verifies plan.md exists and declared dependencies are
-  met; then hands off to the standard execution workflow.
+  of the <feature-name> feature in mysuperpowers".
 ---
 
 This skill is the routing layer between planning and execution. When the user pastes a
@@ -143,18 +141,7 @@ These skills activate naturally during milestone work based on their own trigger
 
 ## Compaction Policy
 
-Context grows from test outputs, file reads, error traces, and fix iterations. Compact at clean task boundaries — never mid-task. The agent cannot read token counts directly; use these observable proxies instead:
-
-**Always suggest `/compact`:**
-- After any debugging session resolves (traces are always verbose)
-- After a TDD cycle that needed >1 attempt before going green
-- After code review with 3+ items implemented
-
-**Skip compaction:**
-- After a clean TDD cycle (test passed first try, minimal file reads)
-- After 1-2 simple review fixes with no debugging
-
-**At each checkpoint:** output one summary line of what was accomplished + the reason compaction is worth it. User can skip by saying "continue". After compaction, resume at the next step.
+Context grows from test outputs, file reads, error traces, and fix iterations. Compact at clean task boundaries — never mid-task. The execution skills each carry their own compact checkpoint with the exact thresholds (`test-driven-development` after each cycle, `systematic-debugging` after a fix lands, `receiving-code-review` after feedback is implemented) — follow those; do not invent additional checkpoints between them. After compaction, resume at the next step.
 
 ## Hard Rules
 
